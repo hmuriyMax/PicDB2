@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package api;
+
+service auth_server{
+  rpc GetToken(LoginData) returns (LoginStatus);
+  rpc IsAuthorised(Token) returns (LoginStatus);
+  rpc NewUser(LoginData) returns (LoginStatus);
+}
+
+message LoginData{
+  string login = 1;
+  string password = 2;
+}
+
+message Token{
+  string token = 1;
+}
+
+message LoginStatus{
+  bool isAuthorised = 1;
+  Token token = 2;
+}
+
+option go_package = "auth.pb";

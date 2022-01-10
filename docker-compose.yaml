@@ -1,0 +1,29 @@
+version: '3.5'
+networks:
+  picdb-ntw:
+services: 
+  database:
+    image: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=picdb
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=password
+    networks:
+      - picdb-ntw
+    ports:
+     - '3306:80'
+   
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    ports:
+     - '8095:80'
+    environment:
+     - PMA_HOST=database
+    networks:
+     - picdb-ntw
+     
+  golangSrv:
+    image: golang
+    networks:
+     - picdb-ntw
