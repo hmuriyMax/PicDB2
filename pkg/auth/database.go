@@ -13,9 +13,9 @@ import (
 
 var server = "localhost"
 var port = 3306
-var user = "admin"
-var password = "password"
-var database = "picdb"
+var user = "maxim"
+var password = "password6989"
+var database = "usersPic"
 
 var db *sql.DB
 
@@ -44,7 +44,10 @@ func CheckUser(userlog string, pass string) (int, error) {
 	if err != nil {
 		return -2, err
 	}
-	defer rows.Close()
+	err = rows.Close()
+	if err != nil {
+		return -2, err
+	}
 	var uid int
 	found := false
 	for rows.Next() {
