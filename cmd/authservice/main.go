@@ -12,7 +12,7 @@ func main() {
 	s := grpc.NewServer()
 	srv := &auth.GRPCServer{}
 	api.RegisterAuthServerServer(s, srv)
-	l, err := net.Listen("tcp", ":8080")
+	l, err := net.Listen("tcp", ":6000")
 	if err != nil {
 		log.Fatal(err)
 	}

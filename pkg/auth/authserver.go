@@ -3,6 +3,7 @@ package auth
 import (
 	api "PicDB2/pkg/auth.pb"
 	"context"
+	"log"
 )
 
 type GRPCServer struct{}
@@ -46,10 +47,12 @@ func (s *GRPCServer) NewUser(ctx context.Context, logdt *api.LoginData) (*api.Lo
 	pass := logdt.GetPassword()
 	id, err := InsertUser(userlog, pass)
 	if err != nil {
+		log.Print(err)
 		return nil, err
 	}
 	token, err := GetToken(id)
 	if err != nil {
+		log.Print(err)
 		return nil, err
 	}
 	return &api.LoginStatus{
