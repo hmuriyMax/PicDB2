@@ -7,3 +7,7 @@ rebuild:
 run_auth_server:
 	go build ./cmd/authservice/
 	./authservice
+
+run_http_server:
+	go build ./cmd/httpserver/
+	./httpserver

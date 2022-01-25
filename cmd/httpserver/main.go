@@ -1,33 +1,49 @@
 package main
 
 import (
-	auth_pb "PicDB2/pkg/auth.pb"
-	"context"
-	"flag"
-	"google.golang.org/grpc"
-	"log"
+	"html/template"
+	"net/http"
+	"os"
 )
 
+func CheckIn(arr []string, s string) bool {
+	for i := 0; i < len(arr); i++ {
+		if arr[i] == s[:len(arr[i])] {
+			return true
+		}
+	}
+	return false
+}
+
+var endf = []string{".html", ".css", ".js"}
+var maxl = 5
+
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+	str := r.URL.Path[1:]
+	if len(str) < 5 || CheckIn(endf, str[:maxl]) {
+		str += "./cmd/httpserver/html/index.html"
+	}
+	println(str)
+	var tpl = template.Must(template.ParseFiles(str))
+	err := tpl.Execute(w, nil)
+	if err != nil {
+		return
+	}
+}
+
 func main() {
-	flag.Parse()
-	if flag.NArg() < 2 {
-		log.Fatal("not enough args")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3000"
 	}
 
-	x := flag.Arg(0)
-	y := flag.Arg(1)
-
-	conn, err := grpc.Dial(":6000", grpc.WithInsecure())
+	fileServer := http.FileServer(http.Dir("./cmd/httpserver/html/res/"))
+	http.Handle("/res/", http.StripPrefix("/res", fileServer))
+	http.HandleFunc("/", indexHandler)
+	http.HandleFunc("/auth", authHandler)
+	http.HandleFunc("/login", loginHandler)
+	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
-
-	c := auth_pb.NewAuthServerClient(conn)
-
-	res, err := c.GetToken(context.Background(), &auth_pb.LoginData{Login: x, Password: y})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println(res.GetToken(), res.GetIsAuthorised())
 }

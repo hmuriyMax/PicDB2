@@ -1,0 +1,73 @@
+*{
+    box-sizing: border-box;
+}
+
+body{
+    background-image: url("/res/img/grad.jpg");
+    background-size: 100% 100%;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+}
+
+#blur{
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(30px) saturate(40%);
+}
+
+form{
+    position: absolute;
+    top: calc(50% - 125px);
+    left: calc(50% - 150px);
+    width: 300px;
+    height: 200px;
+    background-color: white;
+    border: #2C1841 5px solid;
+    border-radius: 5px;
+}
+h2{
+    text-align: center;
+    font-family: Roboto, serif;
+    font-size: 30px;
+    margin: 10px;
+    border-bottom: black 2px solid;
+}
+
+input{
+    width: 100%;
+    border: none;
+    outline: none;
+    padding:5px 10px;
+    font-size: 18px;
+    font-family: Consolas, sans-serif;
+    margin: 5px auto;
+}
+input:empty{
+    text-align: center;
+}
+
+input[type="submit"], input[type="button"]{
+    position: absolute;
+    bottom: 10px;
+    width: 44%;
+    height: 35px;
+    font-weight: bold;
+}
+
+input[type="submit"]{
+    left:3%;
+}
+
+
+input[type="button"]{
+    left:53%;
+    background-color: #86de03;
+    font-size: 15px;
+}
+
+input[type="submit"]:hover, input[type="button"]:hover{
+    background-color: #2C1841;
+    color:white;
+    cursor: pointer;
+}

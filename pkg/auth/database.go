@@ -16,7 +16,7 @@ import (
 var server = "localhost"
 var port = 5432
 var user = "maxim"
-var password = "xamburger6989"
+var password = "cringe2001"
 var database = "usersPic"
 
 var db *sql.DB
@@ -33,7 +33,7 @@ func init() {
 	var err error
 	connString := fmt.Sprintf("user=%s password=%s port=%d database=%s",
 		user, password, port, database)
-	fmt.Printf("%s\n", connString)
+	log.Printf("RECEIVED RESPONCE to start server with: \n%s", connString)
 	db, err = sql.Open("postgres", connString)
 	if err != nil {
 		log.Fatal(err)
@@ -42,12 +42,12 @@ func init() {
 	if err = db.Ping(); err != nil {
 		log.Fatal(err)
 	}
-	log.Println("ESTABLISHED CONNECTION AT ", server, ":", port, " db: ", database)
+	log.Printf("ESTABLISHED CONNECTION AT %s:%d db: %s\n\n", server, port, database)
 }
 
 func CheckUser(userlog string, pass string) (int, error) {
 	var err error
-	log.Printf("searching for %s/%s in database", userlog, pass)
+	log.Printf("RECEIVED RESPONCE to check user %s/%s in database", userlog, GetMd5(pass))
 	rows, err := db.Query("SELECT id FROM passwords WHERE login = $1 AND password = $2", userlog, GetMd5(pass))
 	if err != nil {
 		return -2, err
@@ -73,7 +73,7 @@ func CheckUser(userlog string, pass string) (int, error) {
 	if err != nil {
 		return -2, err
 	}
-	log.Println("user not found")
+	log.Println("FAILED to find user not found")
 	return -1, nil
 }
 
@@ -97,13 +97,13 @@ func GetMd5(text string) string {
 }
 
 func GetToken(id int) (string, error) {
-	//log.Println("asked new Token for id", id)
+	log.Printf("RECEIVED RESPONCE to create token for id=%d ", id)
 
 	var res tok
 
 	res.Userid = id
 	res.Expires = time.Now().Add(ExpirationDuration).Format(time.ANSIC)
-	res.Token = GetMd5(string(rune(id))) + GetRandomString()
+	res.Token = GetMd5(string(rune(id))) + GetMd5(res.Expires)
 
 	var strr string
 	row := db.QueryRow("SELECT Token FROM tokens WHERE Token = $1", res.Token)
@@ -126,15 +126,37 @@ func GetToken(id int) (string, error) {
 }
 
 func CheckToken(token string) (bool, error) {
-	row := db.QueryRow("SELECT * FROM Tokens WHERE Token = $1", token)
-	if row != nil {
+	log.Printf("RECEIVED RESPONCE to check token: %s ", token)
+	var gotToken tok
+	row := db.QueryRow("SELECT token, id, expires FROM tokens WHERE token = $1", token)
+	err := row.Scan(&gotToken)
+	if err != nil {
+		return false, err
+	}
+	tm, err := time.Parse(time.ANSIC, gotToken.Expires)
+	if err != nil {
+		return false, err
+	}
+	if gotToken.Token == token && tm.After(time.Now()) {
+		log.Printf("SUCCESS: token %s for id=%d expires on %s", gotToken.Token, gotToken.Userid, gotToken.Expires)
 		return true, nil
 	}
+	log.Printf("FAILED token check")
+
 	return false, nil
 }
 
 func InsertUser(userlog string, pass string) (int, error) {
-	rows, err := db.Query("SELECT id FROM passwords ORDER BY id DESC")
+	log.Printf("RECEIVED RESPONCE to create new user w login: %s passhash: %s", userlog, GetMd5(pass))
+	rows, err := db.Query("SELECT id FROM passwords WHERE login = $1", userlog)
+	if err != nil {
+		return 0, err
+	}
+	if rows.Next() {
+		log.Printf("FAILED to create new user: %s aready exists", userlog)
+		return -1, nil
+	}
+	rows, err = db.Query("SELECT id FROM passwords ORDER BY id DESC")
 	if err != nil {
 		return 0, err
 	}
@@ -147,5 +169,6 @@ func InsertUser(userlog string, pass string) (int, error) {
 	}
 	newid++
 	_, err = db.Exec("INSERT INTO passwords VALUES ($1, $2, $3)", newid, userlog, GetMd5(pass))
+	log.Printf("SUCCESS: new user %s with id=%d", userlog, newid)
 	return newid, err
 }
