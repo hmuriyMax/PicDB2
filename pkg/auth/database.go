@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"database/sql"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	_ "github.com/lib/pq"
 	"log"
@@ -23,7 +22,7 @@ var db *sql.DB
 
 var ExpirationDuration = time.Hour * 24 * 60
 
-type tok struct {
+type LToken struct {
 	Token   string
 	Userid  int
 	Expires string
@@ -96,10 +95,10 @@ func GetMd5(text string) string {
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-func GetToken(id int) (string, error) {
+func GetToken(id int) (LToken, error) {
 	log.Printf("RECEIVED RESPONCE to create token for id=%d ", id)
 
-	var res tok
+	var res LToken
 
 	res.Userid = id
 	res.Expires = time.Now().Add(ExpirationDuration).Format(time.ANSIC)
@@ -114,26 +113,27 @@ func GetToken(id int) (string, error) {
 	}
 	_, err := db.Exec("INSERT INTO tokens VALUES ($1, $2, $3)", res.Token, res.Userid, res.Expires)
 	if err != nil {
-		return "", err
+		return LToken{}, err
 	}
 	log.Printf("NEW TOKEN \"%s\" for id=%d EXPIRES ON %s", res.Token, res.Userid, res.Expires)
 
-	str, err := json.Marshal(res)
-	if err != nil {
-		return "", err
-	}
-	return string(str), nil
+	//str, err := json.Marshal(res)
+	//if err != nil {
+	//	return nil, err
+	//}
+	return res, nil
 }
 
 func CheckToken(token string) (bool, error) {
 	log.Printf("RECEIVED RESPONCE to check token: %s ", token)
-	var gotToken tok
+	var gotToken LToken
 	row := db.QueryRow("SELECT token, id, expires FROM tokens WHERE token = $1", token)
-	err := row.Scan(&gotToken)
+	err := row.Scan(&gotToken.Token, &gotToken.Userid, &gotToken.Expires)
 	if err != nil {
-		return false, err
+		log.Printf("FAILED token not found")
+		return false, nil
 	}
-	tm, err := time.Parse(time.ANSIC, gotToken.Expires)
+	tm, err := time.Parse(time.RFC3339, gotToken.Expires)
 	if err != nil {
 		return false, err
 	}
@@ -141,7 +141,7 @@ func CheckToken(token string) (bool, error) {
 		log.Printf("SUCCESS: token %s for id=%d expires on %s", gotToken.Token, gotToken.Userid, gotToken.Expires)
 		return true, nil
 	}
-	log.Printf("FAILED token check")
+	log.Printf("FAILED token expired!")
 
 	return false, nil
 }

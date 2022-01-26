@@ -7,16 +7,18 @@
 </head>
 <body>
     <div id="blur">&nbsp;</div>
-    <form action="/auth" method="POST">
-        <h2>Welcome!</h2>
-        <label>
-            <input type="text" name="login" autofocus placeholder="login">
-        </label>
-        <label>
-            <input type="password" name="pass" placeholder="password">
-        </label>
-        <input type="submit" value="Войти">
-        <a href="/"><input type="button" value="На главную"></a>
-    </form>
+    <div id="logcontainer">
+        <form action="/auth" method="POST">
+            <h2>Авторизуйтесь</h2>
+            <label>
+                <input type="text" name="login" autofocus placeholder="login">
+            </label>
+            <label>
+                <input type="password" name="pass" placeholder="password">
+            </label>
+            <input type="submit" value="Войти">
+            <a href="/"><input type="button" value="На главную"></a>
+        </form>
+    </div>
 </body>
 </html>

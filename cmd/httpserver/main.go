@@ -2,6 +2,7 @@ package main
 
 import (
 	"html/template"
+	"log"
 	"net/http"
 	"os"
 )
@@ -23,7 +24,8 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	if len(str) < 5 || CheckIn(endf, str[:maxl]) {
 		str += "./cmd/httpserver/html/index.html"
 	}
-	println(str)
+	ip := r.RemoteAddr
+	log.Printf("IP %s GET %s", ip, str)
 	var tpl = template.Must(template.ParseFiles(str))
 	err := tpl.Execute(w, nil)
 	if err != nil {

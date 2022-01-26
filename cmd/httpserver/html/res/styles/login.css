@@ -19,8 +19,8 @@ body{
 form{
     position: absolute;
     top: calc(50% - 125px);
-    left: calc(50% - 150px);
-    width: 300px;
+    left: calc(50% - 200px);
+    width: 400px;
     height: 200px;
     background-color: white;
     border: #2C1841 5px solid;

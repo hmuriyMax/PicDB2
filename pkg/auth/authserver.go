@@ -27,7 +27,7 @@ func (s *GRPCServer) GetToken(ctx context.Context, logdt *api.LoginData) (*api.L
 		if err != nil {
 			return nil, err
 		}
-		lstat.Token = &api.Token{Token: token}
+		lstat.Token = &api.Token{Token: token.Token, Uid: int32(token.Userid), Expires: token.Expires}
 		lstat.IsAuthorised = true
 	}
 	return &lstat, nil
@@ -64,7 +64,7 @@ func (s *GRPCServer) NewUser(ctx context.Context, logdt *api.LoginData) (*api.Lo
 		return nil, err
 	}
 	return &api.LoginStatus{
-		Token:        &api.Token{Token: token},
+		Token:        &api.Token{Token: token.Token, Uid: int32(token.Userid), Expires: token.Expires},
 		IsAuthorised: true}, nil
 }
 

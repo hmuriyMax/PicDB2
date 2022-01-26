@@ -101,7 +101,7 @@ header > .central-cont{
     top: calc(50% - 15px);
     font-size: 20px;
     outline: 0;
-    border-radius: 1px;
+    border-radius: 2px;
     border: 0;
     padding: 0 7px;
 }
@@ -134,9 +134,15 @@ input::-webkit-search-results-decoration { display: none; }
     margin: 5px;
     padding: 5px 10px;
     border-radius: 5px;
+    font-weight: bold;
 }
 #rightH > a:hover{
-    font-weight: bold;
+    background-color: #ffec00;
+    color: black;
+}
+
+#logInBut::before:hover{
+    color: black;
 }
 
 #logInBut::before{
@@ -146,9 +152,17 @@ input::-webkit-search-results-decoration { display: none; }
     font-weight: bold;
 }
 
+#logInBut:hover::before{
+    color: black;
+}
+
 #RegBut::before{
     content: '...';
     color: #ffec00;
     padding-right: 10px;
     font-weight: bold;
+}
+
+#RegBut:hover::before{
+    color: black;
 }
