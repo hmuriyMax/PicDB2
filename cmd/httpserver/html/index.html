@@ -3,22 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="res/styles/style.css">
+    <link rel="icon" href="favicon.ico">
     <title>Main</title>
 </head>
 <body>
     <header>
-        <div class="central-cont">
+        <div class="centralCont">
             <div id="left">
-                <h1 id="titleH">PicDB</h1>
+                <h1 id="titleH"><a href="/">PicDB</a></h1>
                 <span id="titleS">GO with your pics. safely (or not ^^)</span>
             </div>
             <div id="searchH">
-                    <input autofocus class="search-mainH" type="search" name="s" placeholder="Search here!">
+                    <input autofocus class="search-mainH" type="search" name="s" placeholder="Ищите тут!">
             </div>
             <div id="rightH">
-                <a href="/login" id="logInBut">Log in</a>
-                <a href="/reg" id="RegBut">Registration</a>
+                <a href="/login" id="logInBut">Войти</a>
+                <a href="/reg" id="RegBut">Регистрация</a>
             </div>
+        </div>
+        <div id="menuCont">
+            <nav>
+                <a href="#">Главная</a>
+                <a href="/about">О нас</a>
+                <a href="/top">Топ</a>
+                <a href="/myph">Мои фотографии</a>
+            </nav>
         </div>
     </header>
 </body>

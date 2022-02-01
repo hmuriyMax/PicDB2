@@ -6,16 +6,17 @@
     <title>Login</title>
 </head>
 <body>
-    <div id="blur">&nbsp;</div>
+    <div class="blur">&nbsp;</div>
     <div id="logcontainer">
         <form action="/auth" method="POST">
-            <h2>Авторизуйтесь</h2>
+            <h2>Уже с нами?</h2>
             <label>
-                <input type="text" name="login" autofocus placeholder="login">
+                <input type="text" name="login" autofocus placeholder="имя пользователя или почта" required value="{{.login}}">
             </label>
             <label>
-                <input type="password" name="pass" placeholder="password">
+                <input type="password" name="pass" placeholder="пароль" required>
             </label>
+            <label class="errmess">{{.status}}</label>
             <input type="submit" value="Войти">
             <a href="/"><input type="button" value="На главную"></a>
         </form>

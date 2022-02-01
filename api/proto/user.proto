@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package api;
+
+service user_server{
+  rpc GetToken(LoginData) returns (LoginStatus);
+  rpc IsAuthorised(Token) returns (LoginStatus);
+  rpc NewUser(LoginData) returns (LoginStatus);
+  rpc UpdateUser(UserData) returns (Status);
+  rpc DeleteUser(UserId) returns (Status);
+  rpc GetUserData(UserId) returns (UserData);
+}
+
+message LoginData{
+  string login = 1;
+  string password = 2;
+}
+
+message Token{
+  string token = 1;
+  int32 uid = 2;
+  string expires = 3;
+}
+
+message LoginStatus{
+  bool isAuthorised = 1;
+  Token token = 2;
+}
+
+message UserData{
+  int32 id = 1;
+  string name = 2;
+  string gender = 3;
+  string bday = 4;
+  string profilePicURL = 5;
+  string unqhash = 6;
+}
+
+message Status{
+  int32 code = 1;
+}
+
+message UserId{
+  int32 id = 1;
+}
+
+option go_package = "user.pb";

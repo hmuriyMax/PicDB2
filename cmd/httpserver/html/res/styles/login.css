@@ -10,10 +10,8 @@ body{
     margin: 0;
 }
 
-#blur{
-    width: 100%;
-    height: 100%;
-    backdrop-filter: blur(30px) saturate(40%);
+label {
+    display: block
 }
 
 form{
@@ -21,7 +19,7 @@ form{
     top: calc(50% - 125px);
     left: calc(50% - 200px);
     width: 400px;
-    height: 200px;
+    height: 230px;
     background-color: white;
     border: #2C1841 5px solid;
     border-radius: 5px;
@@ -40,7 +38,7 @@ input{
     outline: none;
     padding:5px 10px;
     font-size: 18px;
-    font-family: Consolas, sans-serif;
+    font-family: Consolas, monospace;
     margin: 5px auto;
 }
 input:empty{
@@ -70,4 +68,12 @@ input[type="submit"]:hover, input[type="button"]:hover{
     background-color: #2C1841;
     color:white;
     cursor: pointer;
+}
+
+.errmess{
+    font-family: 'Consolas', monospace;
+    text-align: center;
+    color: red;
+    font-size: 0.8em;
+    font-weight: bold;
 }
