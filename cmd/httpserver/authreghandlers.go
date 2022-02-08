@@ -6,105 +6,102 @@ import (
 	"google.golang.org/grpc"
 	"log"
 	"net/http"
-	"strconv"
-	"time"
 )
 
 func authHandler(w http.ResponseWriter, r *http.Request) {
-	conn, err := grpc.Dial(":6000", grpc.WithInsecure())
+	conn, err := grpc.Dial(":6000")
 	c := userPB.NewUserServerClient(conn)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err)
+	}
 
-	ph, err := r.Cookie("passhash")
-	uh, err := r.Cookie("user_id")
-	if ph.Value != "" && uh.Value != "" {
-		cookieUserId, err := strconv.Atoi(uh.Value)
-		authorised, err := c.IsAuthorised(context.Background(), &userPB.Token{Token: ph.Value, Uid: int32(cookieUserId), Expires: ph.RawExpires})
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			log.Fatal(err)
-		}
-		if authorised.IsAuthorised {
-			Redirector(w, "/", http.StatusFound)
-			return
-		}
+	_, err = r.Cookie("passhash")
+	_, err2 := r.Cookie("user_id")
+	if err == nil && err2 == nil {
+		DelCookie(w, "user_id")
+		DelCookie(w, "passhash")
 	}
 	if r.Method != http.MethodPost {
 		http.Error(w, "Not valid method", http.StatusMethodNotAllowed)
-		log.Fatal(err)
+		log.Println(err)
 	}
 	err = r.ParseForm()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Fatal(err)
+		log.Println(err)
 	}
 	x := r.PostForm.Get("login")
 	y := r.PostForm.Get("pass")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Fatal(err)
+		log.Println(err)
 	}
 	res, err := c.GetToken(context.Background(), &userPB.LoginData{Login: x, Password: y})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Fatal(err)
+		log.Println(err)
 	}
 	if res.IsAuthorised {
-		parse, err := time.Parse(time.ANSIC, res.GetToken().GetExpires())
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			log.Fatal(err)
-		}
-		passCookie := http.Cookie{
-			Name:       "passhash",
-			Value:      res.GetToken().GetToken(),
-			Path:       "/",
-			Domain:     "",
-			Expires:    parse,
-			RawExpires: parse.Format(time.UnixDate),
-			MaxAge:     60 * 60 * 24 * 60,
-			Secure:     true,
-			HttpOnly:   true,
-			SameSite:   0,
-			Raw:        "",
-			Unparsed:   nil,
-		}
-		idCookie := http.Cookie{
-			Name:       "user_id",
-			Value:      strconv.Itoa(int(res.GetToken().GetUid())),
-			Path:       "/",
-			Domain:     "",
-			Expires:    parse,
-			RawExpires: parse.Format(time.UnixDate),
-			MaxAge:     60 * 60 * 24 * 60,
-			Secure:     true,
-			HttpOnly:   true,
-			SameSite:   0,
-			Raw:        "",
-			Unparsed:   nil,
-		}
-		SetCookie(w, passCookie)
-		SetCookie(w, idCookie)
-		Redirector(w, "/", http.StatusFound)
+		SetTokenCookies(res, w)
+		// TODO: Сохранять в куки имя пользователя и URL картинки
+		Redirect(w, "/", http.StatusFound)
+	} else {
+		Redirect(w, "/login?login="+x+"&status=unath", http.StatusSeeOther)
 	}
-	Redirector(w, "/login?login="+x+"&status=unath", http.StatusSeeOther)
 }
 
 func newUserHandler(w http.ResponseWriter, r *http.Request) {
-	conn, err := grpc.Dial(":6000", grpc.WithInsecure())
+	conn, err := grpc.Dial(":6000")
 	c := userPB.NewUserServerClient(conn)
-	//новый GRPC сервер для сохранения информации
-
+	if r.Method != http.MethodPost {
+		http.Error(w, "Not valid method", http.StatusMethodNotAllowed)
+		log.Println(err)
+	}
+	err = r.ParseForm()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Fatal(err)
+		log.Println(err)
 	}
-	user, err := c.NewUser(context.Background(), &userPB.LoginData{Login: "", Password: ""})
+	postedName := r.PostForm.Get("name")
+	postedEmail := r.PostForm.Get("email")
+	postedUname := r.PostForm.Get("uname")
+	postedPass := r.PostForm.Get("pass")
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err)
+	}
+	userid, err := c.NewUser(context.Background(), &userPB.LoginData{Login: postedUname, Password: postedPass})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err)
+	}
+	if userid.GetId() == -1 {
+		Redirect(w, "/reg?name="+postedName+"&email="+
+			postedEmail+"&uname="+postedUname+"&status=unalreadyexist", http.StatusSeeOther)
 		return
 	}
-	user.GetToken()
+	lstat, err := c.GetToken(context.Background(), &userPB.LoginData{Login: postedUname, Password: postedPass})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err)
+	}
+	_, err = c.UpdateUser(context.Background(), &userPB.UserData{Id: userid.GetId(), Name: postedName, Email: postedEmail})
+	if err != nil {
+		_, err := c.DeleteUser(context.Background(), &userPB.UserId{Id: userid.GetId()})
+		if err != nil {
+			return
+		}
+		Redirect(w, "/reg?name="+postedName+"&email="+
+			postedEmail+"&uname="+postedUname+"&status=emalreadyexist", http.StatusSeeOther)
+		return
+	}
+	SetTokenCookies(lstat, w)
+	Redirect(w, "/", http.StatusFound)
 }
 
-func loutHandler(writer http.ResponseWriter, request *http.Request) {
-
+func loutHandler(w http.ResponseWriter, _ *http.Request) {
+	DelCookie(w, "user_id")
+	DelCookie(w, "passhash")
+	Redirect(w, "/", http.StatusFound)
 }

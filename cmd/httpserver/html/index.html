@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="res/styles/style.css">
     <link rel="icon" href="favicon.ico">
+    <style>
+        #ProfBut::before{
+            background-image: url("{{.profpic}}");
+        }
+    </style>
     <title>Main</title>
 </head>
 <body>
@@ -17,8 +22,7 @@
                     <input autofocus class="search-mainH" type="search" name="s" placeholder="Ищите тут!">
             </div>
             <div id="rightH">
-                <a href="/login" id="logInBut">Войти</a>
-                <a href="/reg" id="RegBut">Регистрация</a>
+                {{.buttons}}
             </div>
         </div>
         <div id="menuCont">

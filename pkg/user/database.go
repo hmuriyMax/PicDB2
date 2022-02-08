@@ -44,10 +44,29 @@ func init() {
 	log.Printf("ESTABLISHED CONNECTION AT %s:%d db: %s\n\n", server, port, database)
 }
 
-func CheckUser(userlog string, pass string) (int, error) {
+func GetRandomString() string {
+	rand.Seed(time.Now().UnixNano())
+	chars := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+		"abcdefghijklmnopqrstuvwxyz" +
+		"0123456789")
+	length := 15
+	var b strings.Builder
+	for i := 0; i < length; i++ {
+		b.WriteRune(chars[rand.Intn(len(chars))])
+	}
+	return b.String()
+}
+
+func GetMd5(text string) string {
+	h := md5.New()
+	h.Write([]byte(text))
+	return hex.EncodeToString(h.Sum(nil))
+}
+
+func DBCheckUser(login string, pass string) (int, error) {
 	var err error
-	log.Printf("RECEIVED RESPONCE to check user %s/%s in database", userlog, GetMd5(pass))
-	rows, err := db.Query("SELECT id FROM passwords WHERE (username = $1 OR email = $1) AND password = $2", userlog, GetMd5(pass))
+	log.Printf("RECEIVED RESPONCE to check user %s/%s in database", login, GetMd5(pass))
+	rows, err := db.Query("SELECT id FROM passwords WHERE (username = $1 OR email = $1) AND password = $2", login, GetMd5(pass))
 	if err != nil {
 		return -2, err
 	}
@@ -72,30 +91,12 @@ func CheckUser(userlog string, pass string) (int, error) {
 	if err != nil {
 		return -2, err
 	}
-	log.Println("FAILED to find user not found")
+	log.Println("FA" +
+		"ILED to find user not found")
 	return -1, nil
 }
 
-func GetRandomString() string {
-	rand.Seed(time.Now().UnixNano())
-	chars := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
-		"abcdefghijklmnopqrstuvwxyz" +
-		"0123456789")
-	length := 15
-	var b strings.Builder
-	for i := 0; i < length; i++ {
-		b.WriteRune(chars[rand.Intn(len(chars))])
-	}
-	return b.String()
-}
-
-func GetMd5(text string) string {
-	h := md5.New()
-	h.Write([]byte(text))
-	return hex.EncodeToString(h.Sum(nil))
-}
-
-func GetToken(id int) (LToken, error) {
+func DBGetToken(id int) (LToken, error) {
 	log.Printf("RECEIVED RESPONCE to create token for id=%d ", id)
 
 	var res LToken
@@ -124,7 +125,7 @@ func GetToken(id int) (LToken, error) {
 	return res, nil
 }
 
-func CheckToken(token string) (bool, error) {
+func DBCheckToken(token string) (bool, error) {
 	log.Printf("RECEIVED RESPONCE to check token: %s ", token)
 	var gotToken LToken
 	row := db.QueryRow("SELECT token, id, expires FROM tokens WHERE token = $1", token)
@@ -146,14 +147,14 @@ func CheckToken(token string) (bool, error) {
 	return false, nil
 }
 
-func InsertUser(userlog string, pass string) (int, error) {
-	log.Printf("RECEIVED RESPONCE to create new user w login: %s passhash: %s", userlog, GetMd5(pass))
-	rows, err := db.Query("SELECT id FROM passwords WHERE login = $1", userlog)
+func DBInsertUser(login string, pass string) (int, error) {
+	log.Printf("RECEIVED RESPONCE to create new user w login: %s passhash: %s", login, GetMd5(pass))
+	rows, err := db.Query("SELECT id FROM passwords WHERE username = $1", login)
 	if err != nil {
 		return 0, err
 	}
 	if rows.Next() {
-		log.Printf("FAILED to create new user: %s aready exists", userlog)
+		log.Printf("FAILED to create new user: %s aready exists", login)
 		return -1, nil
 	}
 	rows, err = db.Query("SELECT id FROM passwords ORDER BY id DESC")
@@ -168,7 +169,105 @@ func InsertUser(userlog string, pass string) (int, error) {
 		}
 	}
 	newid++
-	_, err = db.Exec("INSERT INTO passwords VALUES ($1, $2, $3)", newid, userlog, GetMd5(pass))
-	log.Printf("SUCCESS: new user %s with id=%d", userlog, newid)
+	_, err = db.Exec("INSERT INTO passwords VALUES ($1, $2, $3)", newid, login, GetMd5(pass))
+	log.Printf("SUCCESS: new user %s with id=%d", login, newid)
 	return newid, err
+}
+
+func DBUpdateUserData(userdata *UserData) error {
+	log.Printf("RECEIVED RESPONCE to insert new user w \n"+
+		"id:            %d \n"+
+		"name:          %s \n"+
+		"email:         %s \n"+
+		"birthday on:   %s \n"+
+		"gender:        %s \n"+
+		"profilePicURL: %s \n"+
+		"unique key:    %s", userdata.userId, userdata.name, userdata.email, userdata.birthday, userdata.gender,
+		userdata.profilePicURL, userdata.uniqueKey)
+	rows, err := db.Query("SELECT id FROM user_info WHERE id = $1", userdata.userId)
+	if err != nil {
+		return err
+	}
+	if rows.Next() {
+		command := fmt.Sprintf("UPDATE user_info SET name = '%s'", userdata.name)
+		if userdata.birthday != "" {
+			command += fmt.Sprintf(", birthday = '%s'", userdata.birthday)
+		}
+		if userdata.gender != "" {
+			command += fmt.Sprintf(", gender = '%s'", userdata.gender)
+		}
+		if userdata.profilePicURL != "" {
+			command += fmt.Sprintf(", userpic_url = '%s'", userdata.profilePicURL)
+		}
+		if userdata.uniqueKey != "" {
+			command += fmt.Sprintf(", unique_key = '%s'", userdata.uniqueKey)
+		}
+		command += fmt.Sprintf(" WHERE id = %d", userdata.userId)
+		_, err := db.Exec(command)
+		if err != nil {
+			return err
+		}
+	} else {
+		command := fmt.Sprintf("INSERT INTO user_info VALUES (%d", userdata.userId)
+		if userdata.gender != "" {
+			command += fmt.Sprintf(", '%s'", userdata.gender)
+		} else {
+			command += fmt.Sprintf(", null")
+		}
+		if userdata.birthday != "" {
+			command += fmt.Sprintf(", '%s'", userdata.birthday)
+		} else {
+			command += fmt.Sprintf(", null")
+		}
+		if userdata.uniqueKey != "" {
+			command += fmt.Sprintf(", '%s'", userdata.uniqueKey)
+		} else {
+			command += fmt.Sprintf(", null")
+		}
+		if userdata.profilePicURL != "" {
+			command += fmt.Sprintf(", '%s'", userdata.profilePicURL)
+		} else {
+			command += fmt.Sprintf(", DEFAULT")
+		}
+		command += fmt.Sprintf(", '%s')", userdata.name)
+		_, err := db.Exec(command)
+		if err != nil {
+			return err
+		}
+	}
+	log.Printf("SUCCESS!")
+	_, err = db.Exec("UPDATE passwords SET email = $1 WHERE id = $2",
+		userdata.email, userdata.userId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DBDeleteUser(id int32) error {
+	_, err := db.Exec("DELETE from passwords WHERE id = $1", id)
+	return err
+}
+
+func DBGetUserData(id int32) (*UserData, error) {
+	row := db.QueryRow("SELECT * FROM user_info WHERE id = $1", id)
+	if row.Err() != nil {
+		return nil, row.Err()
+	}
+	var ret UserData
+	err := row.Scan(&ret.userId, &ret.gender, &ret.birthday, &ret.uniqueKey, &ret.profilePicURL, &ret.name)
+	if err != nil {
+		return nil, err
+	}
+
+	row = db.QueryRow("SELECT email FROM passwords WHERE id = $1", id)
+	if row.Err() != nil {
+		return nil, row.Err()
+	}
+	err = row.Scan(&ret.email)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ret, nil
 }

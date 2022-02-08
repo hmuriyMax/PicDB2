@@ -5,7 +5,7 @@
         left: -30%;
     }
     100%{
-        left: 5%;
+        left: 0;
     }
 }
 
@@ -56,6 +56,7 @@ header{
 
 #menuCont{
     background: none;
+    color: #86de03;
 }
 #menuCont > nav{
     border: none;
@@ -64,6 +65,11 @@ header{
 #menuCont > nav > a{
     border: none;
     border-radius: 2px;
+    transition: color 0.2s ease-in-out 0s;
+}
+
+#menuCont > nav > a:hover{
+    background-color: inherit;
 }
 
 header > .centralCont{

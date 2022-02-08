@@ -24,7 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type UserServerClient interface {
 	GetToken(ctx context.Context, in *LoginData, opts ...grpc.CallOption) (*LoginStatus, error)
 	IsAuthorised(ctx context.Context, in *Token, opts ...grpc.CallOption) (*LoginStatus, error)
-	NewUser(ctx context.Context, in *LoginData, opts ...grpc.CallOption) (*LoginStatus, error)
+	NewUser(ctx context.Context, in *LoginData, opts ...grpc.CallOption) (*UserId, error)
 	UpdateUser(ctx context.Context, in *UserData, opts ...grpc.CallOption) (*Status, error)
 	DeleteUser(ctx context.Context, in *UserId, opts ...grpc.CallOption) (*Status, error)
 	GetUserData(ctx context.Context, in *UserId, opts ...grpc.CallOption) (*UserData, error)
@@ -56,8 +56,8 @@ func (c *userServerClient) IsAuthorised(ctx context.Context, in *Token, opts ...
 	return out, nil
 }
 
-func (c *userServerClient) NewUser(ctx context.Context, in *LoginData, opts ...grpc.CallOption) (*LoginStatus, error) {
-	out := new(LoginStatus)
+func (c *userServerClient) NewUser(ctx context.Context, in *LoginData, opts ...grpc.CallOption) (*UserId, error) {
+	out := new(UserId)
 	err := c.cc.Invoke(ctx, "/api.user_server/NewUser", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -98,7 +98,7 @@ func (c *userServerClient) GetUserData(ctx context.Context, in *UserId, opts ...
 type UserServerServer interface {
 	GetToken(context.Context, *LoginData) (*LoginStatus, error)
 	IsAuthorised(context.Context, *Token) (*LoginStatus, error)
-	NewUser(context.Context, *LoginData) (*LoginStatus, error)
+	NewUser(context.Context, *LoginData) (*UserId, error)
 	UpdateUser(context.Context, *UserData) (*Status, error)
 	DeleteUser(context.Context, *UserId) (*Status, error)
 	GetUserData(context.Context, *UserId) (*UserData, error)
@@ -114,7 +114,7 @@ func (UnimplementedUserServerServer) GetToken(context.Context, *LoginData) (*Log
 func (UnimplementedUserServerServer) IsAuthorised(context.Context, *Token) (*LoginStatus, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IsAuthorised not implemented")
 }
-func (UnimplementedUserServerServer) NewUser(context.Context, *LoginData) (*LoginStatus, error) {
+func (UnimplementedUserServerServer) NewUser(context.Context, *LoginData) (*UserId, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NewUser not implemented")
 }
 func (UnimplementedUserServerServer) UpdateUser(context.Context, *UserData) (*Status, error) {

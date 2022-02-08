@@ -8,7 +8,10 @@ require (
 	google.golang.org/protobuf v1.27.1
 )
 
-require github.com/lib/pq v1.10.4
+require (
+	github.com/lib/pq v1.10.4
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+)
 
 require (
 	golang.org/x/net v0.0.0-20200822124328-c89045814202 // indirect

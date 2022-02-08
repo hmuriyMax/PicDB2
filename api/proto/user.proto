@@ -5,7 +5,7 @@ package api;
 service user_server{
   rpc GetToken(LoginData) returns (LoginStatus);
   rpc IsAuthorised(Token) returns (LoginStatus);
-  rpc NewUser(LoginData) returns (LoginStatus);
+  rpc NewUser(LoginData) returns (UserId);
   rpc UpdateUser(UserData) returns (Status);
   rpc DeleteUser(UserId) returns (Status);
   rpc GetUserData(UserId) returns (UserData);
@@ -34,6 +34,7 @@ message UserData{
   string bday = 4;
   string profilePicURL = 5;
   string unqhash = 6;
+  string email = 7;
 }
 
 message Status{

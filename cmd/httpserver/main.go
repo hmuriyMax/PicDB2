@@ -27,7 +27,24 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	ip := r.RemoteAddr
 	log.Printf("IP %s GET %s", ip, str)
 	var tpl = template.Must(template.ParseFiles(str))
-	err := tpl.Execute(w, nil)
+	var params map[string]template.HTML
+	_, err := r.Cookie("user_id")
+	if err == nil {
+		params = map[string]template.HTML{
+			"buttons": template.HTML(loggedButtons),
+		}
+	} else {
+		params = map[string]template.HTML{
+			"buttons": template.HTML(unLoggedButtons),
+		}
+	}
+	pic, err := r.Cookie("profile_picture_url")
+	if err == nil {
+		params["profpic"] = template.HTML(pic.Value)
+	} else {
+		params["profpic"] = "/res/img/default_profile_pic.png"
+	}
+	err = tpl.Execute(w, params)
 	if err != nil {
 		return
 	}
@@ -41,11 +58,11 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	var tpl = template.Must(template.ParseFiles(str))
 	mess := ""
 	if r.URL.Query().Get("status") == "unath" {
-		mess = Errpass
+		mess = errPass
 	}
 	params := map[string]string{
 		"login":  r.URL.Query().Get("login"),
-		"status": string(template.HTML(mess)),
+		"status": mess,
 	}
 	err := tpl.Execute(w, params)
 	if err != nil {
@@ -59,7 +76,22 @@ func regHandler(w http.ResponseWriter, r *http.Request) {
 	ip := r.RemoteAddr
 	log.Printf("IP %s GET %s", ip, str)
 	var tpl = template.Must(template.ParseFiles(str))
-	err := tpl.Execute(w, nil)
+	name := r.URL.Query().Get("name")
+	email := r.URL.Query().Get("email")
+	uname := r.URL.Query().Get("uname")
+	status := r.URL.Query().Get("status")
+	if status == "unalreadyexist" {
+		status = errUsername
+	} else if status == "emalreadyexist" {
+		status = errEmail
+	}
+	params := map[string]string{
+		"name":   name,
+		"email":  email,
+		"uname":  uname,
+		"status": status,
+	}
+	err := tpl.Execute(w, params)
 	if err != nil {
 		return
 	}
@@ -70,16 +102,19 @@ func main() {
 	if port == "" {
 		port = "3000"
 	}
+	mux := http.NewServeMux()
 	fileServer := http.FileServer(http.Dir("./cmd/httpserver/html/res/"))
-	http.Handle("/res/", http.StripPrefix("/res", fileServer))
-	http.HandleFunc("/", indexHandler)
-	http.HandleFunc("/auth", authHandler)
-	http.HandleFunc("/login", loginHandler)
-	http.HandleFunc("/reg", regHandler)
-	http.HandleFunc("/newser", newUserHandler)
-	http.HandleFunc("/logout", loutHandler)
-	err := http.ListenAndServe(":"+port, nil)
+	mux.Handle("/res/", http.StripPrefix("/res", fileServer))
+	mux.HandleFunc("/", indexHandler)
+	mux.HandleFunc("/auth", authHandler)
+	mux.HandleFunc("/login", loginHandler)
+	mux.HandleFunc("/reg", regHandler)
+	mux.HandleFunc("/newser", newUserHandler)
+	mux.HandleFunc("/logout", loutHandler)
+	mux.HandleFunc("/profile", profileHandler)
+	log.Printf("HTTP-server started! Port: %s", port)
+	err := http.ListenAndServe(":"+port, mux)
 	if err != nil {
-		return
+		log.Fatal(err)
 	}
 }

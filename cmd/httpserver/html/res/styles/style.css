@@ -148,39 +148,47 @@ input::-webkit-search-results-decoration { display: none; }
     border: #ffec00 2px solid;
     height: min-content;
     margin: 5px;
-    padding: 5px 10px;
+    padding: 5px 10px 5px calc(1.5em + 10px);
     border-radius: 5px;
     font-weight: bold;
     transition: background-color 0.2s ease-in-out 0s;
+    position: relative;
 }
 #rightH > a:hover{
     background-color: #ffec00;
     color: black;
 }
 
-#logInBut::before:hover{
-    color: black;
-}
-
-#logInBut::before{
-    content: '->|';
+#rightH > a:before{
     color: #ffec00;
-    padding-right: 10px;
+    position: absolute;
+    top: 5px;
+    left: 10px;
+    margin-right: 10px;
     font-weight: bold;
 }
 
-#logInBut:hover::before{
-    color: black;
+#LogInBut::before{
+    content: '->|';
 }
 
 #RegBut::before{
     content: '...';
-    color: #ffec00;
-    padding-right: 10px;
-    font-weight: bold;
 }
 
-#RegBut:hover::before{
+#LogOutBut::before{
+    content: '|->';
+}
+
+#ProfBut::before{
+    content: " ";
+    display: inline-block;
+    background-size: 1.2em;
+    width: 1.2em;
+    height: 1.2em;
+}
+
+#rightH > a:hover::before{
     color: black;
 }
 
@@ -214,4 +222,12 @@ input::-webkit-search-results-decoration { display: none; }
 #menuCont > nav > a:hover{
     background-color: #2C1841;
     color: #fff;
+}
+
+.error{
+    text-align: center;
+    color: red;
+    font-family: 'Consolas', monospace;
+    font-weight: bold;
+    font-size: 0.8em;
 }

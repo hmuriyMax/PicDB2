@@ -69,11 +69,3 @@ input[type="submit"]:hover, input[type="button"]:hover{
     color:white;
     cursor: pointer;
 }
-
-.errmess{
-    font-family: 'Consolas', monospace;
-    text-align: center;
-    color: red;
-    font-size: 0.8em;
-    font-weight: bold;
-}
