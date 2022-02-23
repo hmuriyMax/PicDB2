@@ -1,22 +1,16 @@
 package main
 
 import (
-	userPB "PicDB2/pkg/user.pb"
+	userPB "PicDB2/pkg/user_pb"
 	"context"
-	"google.golang.org/grpc"
 	"log"
 	"net/http"
 )
 
 func authHandler(w http.ResponseWriter, r *http.Request) {
-	conn, err := grpc.Dial(":6000")
-	c := userPB.NewUserServerClient(conn)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Println(err)
-	}
+	c := *DialUserService()
 
-	_, err = r.Cookie("passhash")
+	_, err := r.Cookie("passhash")
 	_, err2 := r.Cookie("user_id")
 	if err == nil && err2 == nil {
 		DelCookie(w, "user_id")
@@ -44,7 +38,11 @@ func authHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if res.IsAuthorised {
 		SetTokenCookies(res, w)
-		// TODO: Сохранять в куки имя пользователя и URL картинки
+		data, err := c.GetPartUserData(context.Background(), &userPB.UserId{Id: res.GetToken().GetUid()})
+		if err != nil {
+			return
+		}
+		SetCookie(w, "username", data.GetUsername(), authAge)
 		Redirect(w, "/", http.StatusFound)
 	} else {
 		Redirect(w, "/login?login="+x+"&status=unath", http.StatusSeeOther)
@@ -52,13 +50,11 @@ func authHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func newUserHandler(w http.ResponseWriter, r *http.Request) {
-	conn, err := grpc.Dial(":6000")
-	c := userPB.NewUserServerClient(conn)
+	c := *DialUserService()
 	if r.Method != http.MethodPost {
 		http.Error(w, "Not valid method", http.StatusMethodNotAllowed)
-		log.Println(err)
 	}
-	err = r.ParseForm()
+	err := r.ParseForm()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Println(err)
@@ -78,7 +74,7 @@ func newUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if userid.GetId() == -1 {
 		Redirect(w, "/reg?name="+postedName+"&email="+
-			postedEmail+"&uname="+postedUname+"&status=unalreadyexist", http.StatusSeeOther)
+			postedEmail+"&uname="+postedUname+"&status=unalreadyexist&scroll=toreg", http.StatusSeeOther)
 		return
 	}
 	lstat, err := c.GetToken(context.Background(), &userPB.LoginData{Login: postedUname, Password: postedPass})
@@ -97,6 +93,7 @@ func newUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	SetTokenCookies(lstat, w)
+	SetCookie(w, "username", postedUname, authAge)
 	Redirect(w, "/", http.StatusFound)
 }
 

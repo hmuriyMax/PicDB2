@@ -1,14 +1,16 @@
 package user
 
 import (
-	api "PicDB2/pkg/user.pb"
+	api "PicDB2/pkg/user_pb"
 	"context"
 	"fmt"
+	"strings"
 )
 
-type UserData struct {
+type Data struct {
 	userId        int32
 	name          string
+	username      string
 	email         string
 	birthday      string
 	gender        string
@@ -22,7 +24,7 @@ func (s *GRPCServer) UpdateUser(ctx context.Context, data *api.UserData) (*api.S
 	//if err != nil {
 	//	return nil, err
 	//}
-	udata := UserData{
+	udata := Data{
 		userId:        data.GetId(),
 		name:          data.GetName(),
 		birthday:      data.GetBday(),
@@ -39,6 +41,7 @@ func (s *GRPCServer) UpdateUser(ctx context.Context, data *api.UserData) (*api.S
 }
 
 func (s *GRPCServer) DeleteUser(ctx context.Context, id *api.UserId) (*api.Status, error) {
+	defer fmt.Printf("\n")
 	err := DBDeleteUser(id.GetId())
 	if err != nil {
 		return nil, err
@@ -46,18 +49,34 @@ func (s *GRPCServer) DeleteUser(ctx context.Context, id *api.UserId) (*api.Statu
 	return &api.Status{Code: 0}, nil
 }
 
-func (s *GRPCServer) GetUserData(ctx context.Context, id *api.UserId) (*api.UserData, error) {
-	data, err := DBGetUserData(id.GetId())
+func (s *GRPCServer) GetFullUserData(ctx context.Context, id *api.UserId) (*api.UserData, error) {
+	defer fmt.Printf("\n")
+	data, err := DBGetFullUserData(id.GetId())
 	if err != nil {
 		return nil, err
 	}
 	return &api.UserData{
 		Id:            data.userId,
-		Name:          data.name,
-		Gender:        data.gender,
-		Bday:          data.birthday,
-		ProfilePicURL: data.profilePicURL,
-		Unqhash:       data.uniqueKey,
-		Email:         data.email,
+		Name:          strings.TrimSpace(data.name),
+		Uname:         strings.TrimSpace(data.username),
+		Gender:        strings.TrimSpace(data.gender),
+		Bday:          strings.TrimSpace(data.birthday),
+		ProfilePicURL: strings.TrimSpace(data.profilePicURL),
+		Unqhash:       strings.TrimSpace(data.uniqueKey),
+		Email:         strings.TrimSpace(data.email),
+	}, nil
+}
+
+func (s *GRPCServer) GetPartUserData(ctx context.Context, id *api.UserId) (*api.UserDataS, error) {
+	defer fmt.Printf("\n")
+	data, err := DBGetShortUserData(id.GetId())
+	if err != nil {
+		return nil, err
+	}
+	return &api.UserDataS{
+		Id:            data.userId,
+		Name:          strings.TrimSpace(data.name),
+		Username:      strings.TrimSpace(data.username),
+		ProfilePicURL: strings.TrimSpace(data.profilePicURL),
 	}, nil
 }

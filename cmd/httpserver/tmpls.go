@@ -1,7 +1,10 @@
 package main
 
 import (
-	userPB "PicDB2/pkg/user.pb"
+	userPB "PicDB2/pkg/user_pb"
+	"bytes"
+	"google.golang.org/grpc"
+	"html/template"
 	"log"
 	"net/http"
 	"strconv"
@@ -13,8 +16,20 @@ var errUsername = "Пользователь с таким именем поль�
 var errEmail = "Пользователь с такой почтой уже существует!"
 var unLoggedButtons = " <a href=\"/login\" id=\"LogInBut\">Войти</a>\n <a href=\"/reg\" id=\"RegBut\">Регистрация</a>"
 var loggedButtons = " <a href=\"/profile\" id=\"ProfBut\">Профиль</a>\n <a href=\"/logout\" id=\"LogOutBut\">Выйти</a>"
+var HTMLpath = "./cmd/httpserver/html/"
+var authAge = 60 * 60 * 24 * 60
 
-func SetCookie(w http.ResponseWriter, cookie http.Cookie) {
+func SetCookie(w http.ResponseWriter, name, value string, MaxAge int) {
+	tmp := http.Cookie{
+		Name:   name,
+		Value:  value,
+		MaxAge: MaxAge,
+		Domain: "/",
+	}
+	HTTPSetCookie(w, tmp)
+}
+
+func HTTPSetCookie(w http.ResponseWriter, cookie http.Cookie) {
 	http.SetCookie(w, &cookie)
 	log.Printf("COOKIE is set: %s: %s expires %s", cookie.Name, cookie.Value, cookie.Expires)
 }
@@ -62,8 +77,8 @@ func SetTokenCookies(res *userPB.LoginStatus, w http.ResponseWriter) bool {
 			Raw:        "",
 			Unparsed:   nil,
 		}
-		SetCookie(w, passCookie)
-		SetCookie(w, idCookie)
+		HTTPSetCookie(w, passCookie)
+		HTTPSetCookie(w, idCookie)
 		return true
 	} else {
 		http.Error(w, "Server error: not authorised", http.StatusInternalServerError)
@@ -78,4 +93,47 @@ func DelCookie(w http.ResponseWriter, cookieName string) {
 		MaxAge: -1,
 	}
 	http.SetCookie(w, &c)
+}
+
+func GenerateHeader(r *http.Request) (string, error) {
+	headerPath := HTMLpath + "header.html"
+	var headerTmp = template.Must(template.ParseFiles(headerPath))
+	bt := unLoggedButtons
+	_, err := r.Cookie("user_id")
+	if err == nil {
+		bt = loggedButtons
+	}
+	params := map[string]template.HTML{
+		"buttons": template.HTML(bt),
+	}
+	var res bytes.Buffer
+	err = headerTmp.Execute(&res, params)
+	if err != nil {
+		return "", err
+	}
+	return res.String(), nil
+}
+
+func AddCookies(params *map[string]template.HTML, r *http.Request) {
+	for _, cookie := range r.Cookies() {
+		(*params)[cookie.Name] = template.HTML(cookie.Value)
+	}
+}
+
+func DialUserService() *userPB.UserServerClient {
+	conn, err := grpc.Dial(":6000", grpc.WithInsecure())
+	if err != nil {
+
+	}
+	c := userPB.NewUserServerClient(conn)
+	return &c
+}
+
+func GetCookie(r *http.Request, name string) string {
+	cookie, err := r.Cookie(name)
+	if err != nil {
+		log.Println(err)
+		return ""
+	}
+	return cookie.Value
 }

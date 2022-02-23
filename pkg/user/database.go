@@ -12,6 +12,7 @@ import (
 	"time"
 )
 
+// TODO: скачать модуль viper... и добавить файлы конфига
 var server = "localhost"
 var port = 5432
 var user = "maxim"
@@ -174,8 +175,8 @@ func DBInsertUser(login string, pass string) (int, error) {
 	return newid, err
 }
 
-func DBUpdateUserData(userdata *UserData) error {
-	log.Printf("RECEIVED RESPONCE to insert new user w \n"+
+func DBUpdateUserData(userdata *Data) error {
+	log.Printf("RECEIVED RESPONCE to update user data with: \n"+
 		"id:            %d \n"+
 		"name:          %s \n"+
 		"email:         %s \n"+
@@ -245,29 +246,37 @@ func DBUpdateUserData(userdata *UserData) error {
 }
 
 func DBDeleteUser(id int32) error {
+	log.Printf("RECEIVED RESPONCE to delete user w id=%d", id)
 	_, err := db.Exec("DELETE from passwords WHERE id = $1", id)
 	return err
 }
 
-func DBGetUserData(id int32) (*UserData, error) {
-	row := db.QueryRow("SELECT * FROM user_info WHERE id = $1", id)
+func DBGetFullUserData(id int32) (*Data, error) {
+	log.Printf("RECEIVED RESPONCE to get FULL userdata w id=%d", id)
+	row := db.QueryRow("SELECT user_info.id, gender, birthday, unique_key, userpic_url, name, username, email FROM user_info RIGHT JOIN passwords ON user_info.id = passwords.id WHERE user_info.id = $1", id)
 	if row.Err() != nil {
 		return nil, row.Err()
 	}
-	var ret UserData
-	err := row.Scan(&ret.userId, &ret.gender, &ret.birthday, &ret.uniqueKey, &ret.profilePicURL, &ret.name)
+	var ret Data
+	err := row.Scan(&ret.userId, &ret.gender, &ret.birthday, &ret.uniqueKey,
+		&ret.profilePicURL, &ret.name, &ret.username, &ret.email)
 	if err != nil {
 		return nil, err
 	}
 
-	row = db.QueryRow("SELECT email FROM passwords WHERE id = $1", id)
+	return &ret, nil
+}
+
+func DBGetShortUserData(id int32) (*Data, error) {
+	log.Printf("RECEIVED RESPONCE to get SHORT userdata w id=%d", id)
+	row := db.QueryRow("SELECT user_info.id, name, username, userpic_url FROM user_info RIGHT JOIN passwords ON (user_info.id = passwords.id) WHERE user_info.id = $1", id)
 	if row.Err() != nil {
 		return nil, row.Err()
 	}
-	err = row.Scan(&ret.email)
+	var ret Data
+	err := row.Scan(&ret.userId, &ret.name, &ret.username, &ret.profilePicURL)
 	if err != nil {
 		return nil, err
 	}
-
 	return &ret, nil
 }

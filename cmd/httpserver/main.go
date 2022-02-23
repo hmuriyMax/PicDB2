@@ -16,37 +16,28 @@ func CheckIn(arr []string, s string) bool {
 	return false
 }
 
-var endf = []string{".html", ".css", ".js"}
-var maxl = 5
-
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	str := r.URL.Path[1:]
-	if len(str) < 5 || CheckIn(endf, str[:maxl]) {
-		str += "./cmd/httpserver/html/index.html"
-	}
+	indexPath := HTMLpath + "index.html"
 	ip := r.RemoteAddr
-	log.Printf("IP %s GET %s", ip, str)
-	var tpl = template.Must(template.ParseFiles(str))
-	var params map[string]template.HTML
-	_, err := r.Cookie("user_id")
-	if err == nil {
-		params = map[string]template.HTML{
-			"buttons": template.HTML(loggedButtons),
-		}
-	} else {
-		params = map[string]template.HTML{
-			"buttons": template.HTML(unLoggedButtons),
-		}
+	log.Printf("IP %s GET %s", ip, indexPath)
+	var indexTmp = template.Must(template.ParseFiles(indexPath))
+	header, err := GenerateHeader(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	params := map[string]template.HTML{
+		"header": template.HTML(header),
 	}
 	pic, err := r.Cookie("profile_picture_url")
 	if err == nil {
-		params["profpic"] = template.HTML(pic.Value)
+		params["profile_picture_url"] = template.HTML(pic.Value)
 	} else {
-		params["profpic"] = "/res/img/default_profile_pic.png"
+		params["profile_picture_url"] = "/res/img/default_profile_pic.png"
 	}
-	err = tpl.Execute(w, params)
+	err = indexTmp.Execute(w, params)
 	if err != nil {
-		return
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
@@ -71,27 +62,36 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func regHandler(w http.ResponseWriter, r *http.Request) {
-	str := r.URL.Path[1:]
-	str = "./cmd/httpserver/html/register.html"
+	regPath := HTMLpath + "register.html"
 	ip := r.RemoteAddr
-	log.Printf("IP %s GET %s", ip, str)
-	var tpl = template.Must(template.ParseFiles(str))
+	log.Printf("IP %s GET %s", ip, regPath)
+	var regTpl = template.Must(template.ParseFiles(regPath))
+
+	header, err := GenerateHeader(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	params := map[string]template.HTML{
+		"header": template.HTML(header),
+	}
+
 	name := r.URL.Query().Get("name")
 	email := r.URL.Query().Get("email")
 	uname := r.URL.Query().Get("uname")
 	status := r.URL.Query().Get("status")
+
 	if status == "unalreadyexist" {
 		status = errUsername
 	} else if status == "emalreadyexist" {
 		status = errEmail
 	}
-	params := map[string]string{
-		"name":   name,
-		"email":  email,
-		"uname":  uname,
-		"status": status,
-	}
-	err := tpl.Execute(w, params)
+
+	params["name"] = template.HTML(name)
+	params["email"] = template.HTML(email)
+	params["uname"] = template.HTML(uname)
+	params["status"] = template.HTML(status)
+	err = regTpl.Execute(w, params)
 	if err != nil {
 		return
 	}
@@ -100,7 +100,7 @@ func regHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "3000"
+		port = "8080"
 	}
 	mux := http.NewServeMux()
 	fileServer := http.FileServer(http.Dir("./cmd/httpserver/html/res/"))
@@ -112,7 +112,7 @@ func main() {
 	mux.HandleFunc("/newser", newUserHandler)
 	mux.HandleFunc("/logout", loutHandler)
 	mux.HandleFunc("/profile", profileHandler)
-	log.Printf("HTTP-server started! Port: %s", port)
+	log.Printf("HTTP-server started! http://localhost:%s", port)
 	err := http.ListenAndServe(":"+port, mux)
 	if err != nil {
 		log.Fatal(err)

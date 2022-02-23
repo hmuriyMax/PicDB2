@@ -1,7 +1,7 @@
 package user
 
 import (
-	api "PicDB2/pkg/user.pb"
+	api "PicDB2/pkg/user_pb"
 	"context"
 	"fmt"
 	"log"
@@ -44,10 +44,10 @@ func (s *GRPCServer) IsAuthorised(ctx context.Context, tok *api.Token) (*api.Log
 		IsAuthorised: status}, nil
 }
 
-func (s *GRPCServer) NewUser(ctx context.Context, logdt *api.LoginData) (*api.UserId, error) {
+func (s *GRPCServer) NewUser(ctx context.Context, logData *api.LoginData) (*api.UserId, error) {
 	defer fmt.Printf("\n")
-	userlog := logdt.GetLogin()
-	pass := logdt.GetPassword()
+	userlog := logData.GetLogin()
+	pass := logData.GetPassword()
 	id, err := DBInsertUser(userlog, pass)
 	if err != nil {
 		log.Print(err)

@@ -1,0 +1,133 @@
+header{
+    background-color: transparent;
+}
+#menuCont{
+    background-color: transparent;
+    color: #86de03;
+}
+
+main{
+    display: flex;
+    padding: 15px 0;
+    color: #eee;
+}
+body {
+    background-color: #090909;
+    background-size: cover;
+}
+div.leftcol{
+    width: 340px;
+    background-color: #151515;
+    padding: 20px;
+    border-radius: 3px;
+    margin-right: 15px;
+}
+div.picture-container{
+    min-height: 300px;
+    max-height: 500px;
+    vertical-align: middle;
+    overflow: hidden;
+}
+
+div.picture-container img{
+    display: block;
+    width: 300px;
+    min-height: 300px;
+}
+
+button.edit-button{
+    display: block;
+    color: inherit;
+    background-color: transparent;
+    border: 2px solid #ffec00;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 10px auto;
+    transition: background-color 0.1s linear 0s;
+}
+
+button.edit-button:hover{
+    color: black;
+    background-color: #ffec00;
+}
+
+div.data-container{
+    font-family: 'Roboto', sans-serif;
+    margin: 40px auto 0 auto;
+}
+
+h2{
+    font-size: 2em;
+    font-weight: bold;
+    width: max-content;
+    margin: 0;
+}
+
+div.unidcont{
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+div.username{
+    font-family: 'Consolas', monospace;
+    transition: color 0.1s ease-in-out 0s;
+}
+div.username::before{
+    content: '@';
+    margin-right: 0.1em;
+    opacity: 0.6;
+}
+div.username:hover{
+    color: #005ce0;
+}
+
+div.id:before{
+    content: '#';
+    margin-right: 0.1em;
+    opacity: 0.6;
+}
+
+div.followers::after{
+    content: 'подписчик';
+    opacity: 0.6;
+    margin-left: 0.2em;
+}
+
+div.subscribes::after{
+    content: 'подписок';
+    opacity: 0.6;
+    margin-left: 0.2em;
+}
+
+div.rightcol{
+    background-color: #151515;
+    padding: 20px;
+    border-radius: 3px;
+    width: 845px;
+}
+
+h3{
+    margin: 0;
+    font-weight: normal;
+}
+
+div.gallery_pic, div.achievements_box, div.stat_box{
+    height: 250px;
+    background-color: #222;
+    margin: 10px 0 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+div.achievements_box{
+    height: 50px;
+}
+
+div.nothing_to_show{
+    font-size: 0.9em;
+    opacity: 0.8;
+}

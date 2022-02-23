@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{.name}} - профиль</title>
+    <link rel="stylesheet" href="res/styles/style.css">
+    <link rel="stylesheet" href="res/styles/header.css">
+    <link rel="stylesheet" href="res/styles/profile.css">
+    <link rel="icon" href="res/img/favicon.ico">
+    <script src="res/js/profilescripts.js" defer></script>
+    <style>
+        #ProfBut::before{
+            background-image: url("{{.profile_picture_url}}");
+        }
+    </style>
+</head>
+<body>
+    {{.header}}
+    <div class="centralCont">
+        <main>
+            <div class="leftcol">
+                <div class="picture-container">
+                    <img src="{{.profile_picture_url}}" alt="Ошибка при загрузке фото! Сообщите, пожалуйста, администратору">
+                    <button class="edit-button" onclick="show_pic_wind()">🗿 Изменить картинку</button>
+                </div>
+                <div class="data-container">
+                    <h2 class="name">{{.name}}</h2>
+                    <div class="unidcont">
+                        <div class="username"><a href="/search?uid={{.user_id}}">{{.username}}</a>
+                        </div>
+                        <div class="id"><span>{{.user_id}}</span></div>
+                    </div>
+                    <div class="followers">👥 <a href="/profile?tab=followers">{{.follnum}}</a></div>
+                    <div class="subscribes">✅ <a href="/profile?tab=subscriptions">{{.subsnum}}</a></div>
+                    <button class="edit-button" onclick="show_edit_wind()">📝 Редактировать профиль</button>
+                </div>
+            </div>
+            <div class="rightcol">
+                <h3>📈 Топ моих фотографий:</h3>
+                <div class="gallery_pic">
+                    <!--TODO: галерея картинок в профиле-->
+                    <div class="nothing_to_show">Здесь пока ничего нет... 😔</div>
+                </div>
+                <h3>🏅 Ачивки:</h3>
+                <div class="achievements_box">
+                    <!--TODO: создать систему ачивок-->
+                    <div class="nothing_to_show">У вас нет ни одной ачивки, но всё впереди!</div>
+                </div>
+                <h3>📊 Ваша статистика:</h3>
+                <div class="stat_box">
+                    <div class="nothing_to_show">Вы ещё ничего не загружали... Самое время!</div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

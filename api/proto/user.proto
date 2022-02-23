@@ -8,7 +8,8 @@ service user_server{
   rpc NewUser(LoginData) returns (UserId);
   rpc UpdateUser(UserData) returns (Status);
   rpc DeleteUser(UserId) returns (Status);
-  rpc GetUserData(UserId) returns (UserData);
+  rpc GetFullUserData(UserId) returns (UserData);
+  rpc GetPartUserData(UserId) returns (UserDataS);
 }
 
 message LoginData{
@@ -35,6 +36,14 @@ message UserData{
   string profilePicURL = 5;
   string unqhash = 6;
   string email = 7;
+  string uname = 8;
+}
+
+message UserDataS{
+  int32 id = 1;
+  string username = 2;
+  string name = 3;
+  string profilePicURL = 4;
 }
 
 message Status{
@@ -45,4 +54,4 @@ message UserId{
   int32 id = 1;
 }
 
-option go_package = "user.pb";
+option go_package = "user_pb/;user_pb";
