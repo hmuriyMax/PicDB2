@@ -16,7 +16,7 @@ import (
 var server = "localhost"
 var port = 5432
 var user = "maxim"
-var password = "cringe2001"
+var password = "fuck2022"
 var database = "usersPic"
 
 var db *sql.DB

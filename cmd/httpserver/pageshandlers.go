@@ -25,6 +25,7 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	//TODO: добавить вкладки с подписчиками, подписками и редактированием профиля через GET
 	//TODO: Возможность заходить на чужой профиль (через /profile?id=01545 или /profile01545)
+	//TODO: ошибка при неавт. переходе в страницу профиля
 	c := *DialUserService()
 	uID, err := strconv.Atoi(GetCookie(r, "user_id"))
 	if err != nil {

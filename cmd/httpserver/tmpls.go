@@ -4,11 +4,11 @@ import (
 	userPB "PicDB2/pkg/user_pb"
 	"bytes"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"html/template"
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 var errPass = "Неверный логин или пароль!"
@@ -44,41 +44,43 @@ func Redirect(w http.ResponseWriter, url string, status int) {
 
 func SetTokenCookies(res *userPB.LoginStatus, w http.ResponseWriter) bool {
 	if res.IsAuthorised {
-		parse, err := time.Parse(time.ANSIC, res.GetToken().GetExpires())
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			log.Fatal(err)
-		}
-		passCookie := http.Cookie{
-			Name:       "passhash",
-			Value:      res.GetToken().GetToken(),
-			Path:       "/",
-			Domain:     "",
-			Expires:    parse,
-			RawExpires: parse.Format(time.UnixDate),
-			MaxAge:     60 * 60 * 24 * 60,
-			Secure:     true,
-			HttpOnly:   true,
-			SameSite:   0,
-			Raw:        "",
-			Unparsed:   nil,
-		}
-		idCookie := http.Cookie{
-			Name:       "user_id",
-			Value:      strconv.Itoa(int(res.GetToken().GetUid())),
-			Path:       "/",
-			Domain:     "",
-			Expires:    parse,
-			RawExpires: parse.Format(time.UnixDate),
-			MaxAge:     60 * 60 * 24 * 60,
-			Secure:     true,
-			HttpOnly:   true,
-			SameSite:   0,
-			Raw:        "",
-			Unparsed:   nil,
-		}
-		HTTPSetCookie(w, passCookie)
-		HTTPSetCookie(w, idCookie)
+		//parse, err := time.Parse(time.ANSIC, res.GetToken().GetExpires())
+		//if err != nil {
+		//	http.Error(w, err.Error(), http.StatusInternalServerError)
+		//	log.Fatal(err)
+		//}
+		SetCookie(w, "passhash", res.GetToken().GetToken(), 60*60*24*60)
+		SetCookie(w, "user_id", strconv.Itoa(int(res.GetToken().GetUid())), 60*60*24*60)
+		//passCookie := http.Cookie{
+		//	Name:       "passhash",
+		//	Value:      res.GetToken().GetToken(),
+		//	Path:       "/",
+		//	Domain:     "",
+		//	Expires:    parse,
+		//	RawExpires: parse.Format(time.UnixDate),
+		//	MaxAge:     60 * 60 * 24 * 60,
+		//	Secure:     true,
+		//	HttpOnly:   true,
+		//	SameSite:   0,
+		//	Raw:        "",
+		//	Unparsed:   nil,
+		//}
+		//idCookie := http.Cookie{
+		//	Name:       "user_id",
+		//	Value:      strconv.Itoa(int(res.GetToken().GetUid())),
+		//	Path:       "/",
+		//	Domain:     "",
+		//	Expires:    parse,
+		//	RawExpires: parse.Format(time.UnixDate),
+		//	MaxAge:     60 * 60 * 24 * 60,
+		//	Secure:     true,
+		//	HttpOnly:   true,
+		//	SameSite:   0,
+		//	Raw:        "",
+		//	Unparsed:   nil,
+		//}
+		//HTTPSetCookie(w, passCookie)
+		//HTTPSetCookie(w, idCookie)
 		return true
 	} else {
 		http.Error(w, "Server error: not authorised", http.StatusInternalServerError)
@@ -121,7 +123,7 @@ func AddCookies(params *map[string]template.HTML, r *http.Request) {
 }
 
 func DialUserService() *userPB.UserServerClient {
-	conn, err := grpc.Dial(":6000", grpc.WithInsecure())
+	conn, err := grpc.Dial(":6000", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 
 	}

@@ -1,2 +1,6 @@
 /.idea
 /cmd/httpserver/html/.idea
+/httpserver
+/httpserver.exe
+/userservice
+/userservice.exe

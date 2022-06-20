@@ -7,15 +7,6 @@ import (
 	"os"
 )
 
-func CheckIn(arr []string, s string) bool {
-	for i := 0; i < len(arr); i++ {
-		if arr[i] == s[:len(arr[i])] {
-			return true
-		}
-	}
-	return false
-}
-
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	indexPath := HTMLpath + "index.html"
 	ip := r.RemoteAddr
@@ -98,9 +89,9 @@ func regHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
+	port := "80"
+	if len(os.Args) > 1 {
+		port = os.Args[1]
 	}
 	mux := http.NewServeMux()
 	fileServer := http.FileServer(http.Dir("./cmd/httpserver/html/res/"))
