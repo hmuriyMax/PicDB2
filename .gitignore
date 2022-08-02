@@ -4,3 +4,5 @@
 /httpserver.exe
 /userservice
 /userservice.exe
+/go.mod
+/go.sum
