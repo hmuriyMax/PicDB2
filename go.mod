@@ -3,14 +3,14 @@ module PicDB2
 go 1.17
 
 require (
-	github.com/golang/protobuf v1.5.0
+	github.com/golang/protobuf v1.5.0 // indirect
 	google.golang.org/grpc v1.43.0
 	google.golang.org/protobuf v1.27.1
 )
 
 require (
+	github.com/hmuriyMax/PicDB2 v0.0.0-20220802090236-19e4aea99ce6
 	github.com/lib/pq v1.10.4
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 )
 
 require (

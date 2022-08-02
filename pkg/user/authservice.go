@@ -1,9 +1,9 @@
 package user
 
 import (
-	api "PicDB2/pkg/user_pb"
 	"context"
 	"fmt"
+	api "github.com/hmuriyMax/PicDB2/pkg/user_pb"
 	"log"
 )
 

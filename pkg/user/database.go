@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"crypto/md5"
 	"database/sql"
 	"encoding/hex"
@@ -67,7 +68,8 @@ func GetMd5(text string) string {
 func DBCheckUser(login string, pass string) (int, error) {
 	var err error
 	log.Printf("RECEIVED RESPONCE to check user %s/%s in database", login, GetMd5(pass))
-	rows, err := db.Query("SELECT id FROM passwords WHERE (username = $1 OR email = $1) AND password = $2", login, GetMd5(pass))
+	ctx := context.Background()
+	rows, err := db.QueryContext(ctx, "SELECT id FROM passwords WHERE (username = $1 OR email = $1) AND password = $2", login, GetMd5(pass))
 	if err != nil {
 		return -2, err
 	}

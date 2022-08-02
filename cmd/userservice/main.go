@@ -1,8 +1,8 @@
 package main
 
 import (
-	"PicDB2/pkg/user"
-	api "PicDB2/pkg/user_pb"
+	"github.com/hmuriyMax/PicDB2/pkg/user"
+	api "github.com/hmuriyMax/PicDB2/pkg/user_pb"
 	"google.golang.org/grpc"
 	"log"
 	"net"
