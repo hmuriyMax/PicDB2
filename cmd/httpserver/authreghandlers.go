@@ -1,8 +1,8 @@
 package main
 
 import (
-	userPB "PicDB2/pkg/user_pb"
 	"context"
+	userPB "github.com/hmuriyMax/PicDB2/pkg/user_pb"
 	"log"
 	"net/http"
 )

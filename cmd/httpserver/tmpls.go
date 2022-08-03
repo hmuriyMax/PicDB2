@@ -1,8 +1,8 @@
 package main
 
 import (
-	userPB "PicDB2/pkg/user_pb"
 	"bytes"
+	userPB "github.com/hmuriyMax/PicDB2/pkg/user_pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"html/template"
