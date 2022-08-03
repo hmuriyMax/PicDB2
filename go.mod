@@ -1,4 +1,4 @@
-module PicDB2
+module github.com/hmuriyMax/PicDB2
 
 go 1.17
 

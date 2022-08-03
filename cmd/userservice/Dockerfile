@@ -1,9 +1,13 @@
-FROM golang:1.18.4-alpine
+FROM golang:1.18
 
-RUN mkdir -p /usr/src/app/
-WORKDIR /usr/src/app/
-COPY . /usr/src/app/
+WORKDIR /usr/src/app
 
-RUN go build main.go
-EXPOSE 80
-ENTRYPOINT go run main.go 80
+# pre-copy/cache go.mod for pre-downloading dependencies and only redownloading them in subsequent builds if they change
+#COPY /home/maxim/GoProjects/PicDB2/go.mod /home/maxim/GoProjects/PicDB2/go.sum ./
+RUN go mod init userservice && go mod tidy
+RUN go get github.com/hmuriyMax/PicDB2/pkg/user
+
+COPY . .
+RUN go build -v -o /usr/local/bin/app ./...
+
+CMD ["app"]
