@@ -10,4 +10,6 @@ RUN go get github.com/hmuriyMax/PicDB2/pkg/user
 COPY . .
 RUN go build -v -o /usr/local/bin/app ./...
 
+EXPOSE 80
+
 CMD ["app"]

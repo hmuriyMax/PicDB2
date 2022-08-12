@@ -32,7 +32,7 @@ type LToken struct {
 
 func init() {
 	var err error
-	connString := fmt.Sprintf("user=%s password=%s port=%d database=%s",
+	connString := fmt.Sprintf("user=%s password=%s port=%d database=%s sslmode=disable",
 		user, password, port, database)
 	log.Printf("RECEIVED RESPONCE to start server with: \n%s", connString)
 	db, err = sql.Open("postgres", connString)

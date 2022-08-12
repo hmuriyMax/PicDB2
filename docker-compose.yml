@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+  httpserver:
+    build: cmd/httpserver/
+    ports:
+      - "80:80"
+
+  userservice:
+    build: cmd/userservice/
+#    network_mode: host
+    depends_on:
+      - httpserver
+
+  postgres:
+      image: postgres:13.3
+      environment:
+        POSTGRES_DB: "usersPic"
+        POSTGRES_USER: "maxim"
+        POSTGRES_PASSWORD: "fuck2022"
+        PGDATA: "/var/lib/postgresql/14/data/pgdata"
+      volumes:
+        - ../2. Init Database:/docker-entrypoint-initdb.d
+        - .:/var/lib/postgresql/14/main
+      ports:
+        - "5432:5432"
